@@ -1,0 +1,11 @@
+.login {
+    background-image: url(../../../public/assets/images/paper.jpeg);
+    background-size: 100%;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
