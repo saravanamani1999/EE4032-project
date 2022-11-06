@@ -1,17 +1,18 @@
 import { Navigate } from "react-router-dom";
-import React, { useEffect, useState } from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import "./voting.css"
 import { Card, Button, Navbar} from "react-bootstrap"
-import { parseName, parseBytes } from '../../utils';
-import ReactDOM from "react-dom";
-
+import { parseBytes } from '../../utils';
+import Timer from '../clock/Timer';
 
 export default function Voting(props){
     const candidateNames = props.candidateNames;
     const candidateImages = props.candidateImages;
     const voteCandidate = props.voteCandidate; 
+    const pollEndTime = props.pollEndTime;
     const loading = props.loading;
+
+    const endElection = props.endElection
 
     const VotingPage = () => {
         return (
@@ -28,6 +29,9 @@ export default function Voting(props){
             ) : (
                 <div>
                     <header> 
+                        <div>
+                            <Timer pollEndTime={pollEndTime} endElection={endElection}/>
+                        </div>
                         <h1>Vote for scranton's next "Assistant (to the) regional manager"! </h1> 
                     </header>
                     <div className="cards">

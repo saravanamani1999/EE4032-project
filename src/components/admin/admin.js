@@ -12,7 +12,6 @@ export default function Admin(props){
                 </div>
                 <div className="bar">
                     <Button className="navButtons" onClick={props.start}>Start election</Button>
-                    <Button className="navButtons" onClick={props.end}>End election</Button>
                     <Button className="navButtons" onClick={props.votingPage}>Vote</Button>
                     <Button className="navButtons" onClick={props.registerPage}>Register</Button>
                     <Button className="navButtons" onClick={props.startPage}>Start Page</Button>

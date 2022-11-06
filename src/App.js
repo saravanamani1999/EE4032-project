@@ -15,8 +15,8 @@ import "bootstrap/dist/css/bootstrap.css";
 import {BrowserRouter as Router,Routes, Route, useRoutes} from "react-router-dom";
 import {useNavigate} from "react-router-dom";
 import {ethers} from 'ethers';
-import { parseBytes } from './utils';
 import { CONTRACT_ABI, CONTRACT_ADDRESS } from "./contracts/config";
+import ThankInterest from "./components/ThankYou/noSpace";
 
 function App() {
   const [haveMetamask, setHaveMetamask] = useState(true);     // check if the browser has MetaMask installed. 
@@ -33,8 +33,9 @@ function App() {
   const [winnerImages, setWinnerImages] = useState([]);
   const [winningVoteCount, setWinningVoteCount] = useState([]);
   const [admin, setAdmin] = useState('');
+  const [pollEnd, setPollEnd] = useState('');
   const [loading, setLoading] = useState(false);
-
+  const [draw, setDraw] = useState(false);
 
   async function _initialize() {
 		await _intializeEthers();
@@ -47,12 +48,14 @@ function App() {
 
 		const candidateNames = await _contract.methods.get_candidate_names().call();
     const candidateImages = await _contract.methods.get_candidate_images().call();
-
+    const endTime = await _contract.methods.get_end_time().call();
+   
 		const admin = await _contract.methods.admin().call();
 
 		setToken(_contract);
 		setcandidateNames(candidateNames);
     setcandidateImages(candidateImages);
+    setPollEnd(endTime);
 		setAdmin(admin);
 
     const names = await _contract.methods.get_winner().call();
@@ -61,6 +64,7 @@ function App() {
     setWinnerImages(images);
     const voteCount = await _contract.methods.get_winning_votes().call();
     setWinningVoteCount(voteCount);
+
 	};
 
 	async function init() {
@@ -100,9 +104,11 @@ function App() {
   const endElection = async () => {
     const isAdmin = await contract.methods.is_admin(address).call();
     if (!isAdmin) {
-      navigate("/adminerror");
+      navigate("/end");
     } else {
       await contract.methods.end_election().send({from: address});
+      const drew = await contract.methods.draw().call();
+      setDraw(drew);
       const names = await contract.methods.get_winner().call();
       setWinnerNames(names);
       const images = await contract.methods.get_winning_images().call();
@@ -119,8 +125,12 @@ function App() {
 
   const directToRegister = async () => {
     const registered = await contract.methods.check_registered(address).call();
+    const candidate_count = await contract.methods.candidate_count().call();
+
     if (registered) {
       navigate("/thankregister");
+    } else if (candidateNames.length >= candidate_count) {
+      navigate("/thankInterest");
     } else {
       navigate("/candidate");
     }
@@ -164,6 +174,11 @@ function App() {
         const started = await contract.methods.started().call();
         const ended = await contract.methods.ended().call();
         const isAdmin = await contract.methods.is_admin(accounts[0]).call();
+        const draw = await contract.methods.draw().call();
+        setDraw(draw);
+        if(!draw) {
+          navigate("/thanks")
+        }
         if (isAdmin) {
           navigate("/admin");
         } else if (!started) {
@@ -172,7 +187,7 @@ function App() {
           navigate("/end");
         } else {
           navigate("/voting"); 
-        }    
+        } 
     }
     catch (error){
         setIsConnected(false);
@@ -187,20 +202,23 @@ function App() {
                                               isConnected = {isConnected} 
                                               candidateNames = {candidateNames} 
                                               candidateImages = {candidateImages} 
+                                              pollEndTime = {pollEnd}
                                               voteCandidate = {voteCandidate}
                                               redirect = {redirect} 
                                               loading = {loading}
+                                              endElection = {endElection}
                                               />}>                         
           </Route>
           <Route path = "/error" element = {<Error redirect = {redirect}/>}></Route>
           <Route path ="/thanks" element ={<ThankYou redirect = {redirect}/>}></Route>
           <Route path="/candidate" element ={<RegisterCandidate loading = {loading} isConnected = {isConnected} redirect = {redirect} register = {registerCandidate}/>}></Route>
           <Route path="/start" element={<Start isConnected = {isConnected} candidateNames = {candidateNames} candidateImages = {candidateImages} redirect={redirect} register={directToRegister}/>}></Route>
-          <Route path="/end" element={<End isConnected = {isConnected} redirect={redirect} winnerNames={winnerNames} winnerImages={winnerImages} voteCount={winningVoteCount} />}></Route>
-          <Route path="/admin" element={<Admin redirect = {redirect} start={startElection} end={endElection} startPage={directToStart} endPage={directToEnd} registerPage={directToRegister} votingPage={directToVoting}/>}></Route>
+          <Route path="/end" element={<End isConnected = {isConnected} redirect={redirect} winnerNames={winnerNames} winnerImages={winnerImages} voteCount={winningVoteCount} draw={draw}/>}></Route>
+          <Route path="/admin" element={<Admin redirect = {redirect} start={startElection} startPage={directToStart} endPage={directToEnd} registerPage={directToRegister} votingPage={directToVoting}/>}></Route>
           <Route path="/adminerror" element={<AdminError redirect={redirect}/>}></Route>
           <Route path="/thankregister" element={<ThankRegister redirect={redirect}/>}></Route>
           <Route path="/registrationError" element={<Error3 redirect={redirect}/>}></Route>
+          <Route path="/thankInterest" element={<ThankInterest/>}></Route>
         </Routes>
   </div>
   );

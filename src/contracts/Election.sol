@@ -19,6 +19,8 @@ contract Election {
     mapping(address => bool) public voted;
     mapping(address => bool) public registered;
 
+    bool public draw;
+
     constructor(
         uint256 _duration,
         uint256 _candidate_count,
@@ -30,6 +32,7 @@ contract Election {
         ended = false;
         started = false;
         winning_nb_votes = 0;
+        draw = false;
 
         admin = msg.sender;
 
@@ -52,7 +55,7 @@ contract Election {
     function end_election() public {
         require(msg.sender == admin, "You're not the admin");
         require(started, "Election has not started!");
-        require(block.timestamp < poll_end_time, "poll has already ended");
+        require(block.timestamp > poll_end_time, "poll has not ended");
         require(!ended, "Election has already ended!");
 
         ended = true;
@@ -87,6 +90,10 @@ contract Election {
         return voted[voter];
     }
 
+    function get_end_time() public view returns (uint256) {
+        return poll_end_time;
+    }
+
     function get_candidate_names() public view returns (bytes32[] memory) {
         bytes32[] memory items = new bytes32[](candidate_names.length);
         for (uint256 i = 0; i < candidate_names.length; i++) {
@@ -115,12 +122,19 @@ contract Election {
         require(started, "Election has not begun yet");
         for (uint256 i = 0; i < candidate_names.length; i++) {
             if (votes_per_candidate[i] > winning_nb_votes) {
+                for (uint256 j = 0; j < list_of_winners.length; j++) {
+                    list_of_winners.pop();
+                }
                 list_of_winners.push(i);
                 winning_nb_votes = votes_per_candidate[i];
             } else if (votes_per_candidate[i] == winning_nb_votes) {
                 //case in which there are possibly 2 or more winners
                 list_of_winners.push(i);
             }
+        }
+
+        if (list_of_winners.length > 1) {
+            draw = true;
         }
     }
 

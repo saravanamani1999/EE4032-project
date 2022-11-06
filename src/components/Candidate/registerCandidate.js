@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { Form, Container, Button, Navbar} from 'react-bootstrap';
-import { propTypes } from "react-bootstrap/esm/Image";
 import "./form.css"
 
 export default function RegisterCandidate(props) {
@@ -9,16 +8,16 @@ export default function RegisterCandidate(props) {
     const loading = props.loading;
 
     const handleSubmit = (e) => {
-        const form = e.currentTarget;
-        if (form.checkValidity() === false) {
-            e.preventDefault();
-            e.stopPropagation();
-        } else {
-            const name = document.getElementById('form.name').value;
-            const imageUrl = document.getElementById('form.imageUrl').value;
-            props.register(name, imageUrl);
-        }
-        setValidated(true);
+      const form = e.currentTarget;
+      if (form.checkValidity() === false) {
+        e.preventDefault();
+        e.stopPropagation();
+      } else {
+        const name = document.getElementById('form.name').value;
+        const imageUrl = document.getElementById('form.imageUrl').value;
+        props.register(name, imageUrl);
+      }
+      setValidated(true);
     };
        
     const Registering = () => {
