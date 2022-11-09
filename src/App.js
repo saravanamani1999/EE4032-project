@@ -155,7 +155,7 @@ function App() {
     setTimeout(() => {
       setLoading(false);
       navigate("/thankregister");
-    }, 15000);
+    }, 7000);
   }
 
 
